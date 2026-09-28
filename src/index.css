@@ -486,32 +486,30 @@ body {
 }
 
 /* =========================================
-   REAL MOBILE TOUCH SCROLL
-   Desktop is not affected.
+   REAL MOBILE TOUCH SCROLL FIX
 ========================================= */
 
-@media (max-width: 768px) {
-  html,
-  body {
-    touch-action: auto;
-    -webkit-overflow-scrolling: touch;
+@media (max-width: 853px) {
+  html, body {
+    touch-action: pan-y !important; /* Forces vertical scroll */
+    -webkit-overflow-scrolling: touch !important;
   }
 
   #root {
     width: 100%;
     overflow-x: clip;
-  }
-
-  body {
-    position: relative;
+    /* Ithu thaan antha inline style block-a udaikkum */
+    touch-action: pan-y !important; 
   }
 
   .mobile-touch-scroll {
     width: 100%;
     overflow-x: clip;
+    touch-action: pan-y !important;
   }
-
-  .mobile-entrance-bg {
-    touch-action: pan-y;
+  
+  /* Mobile-la 3D Canvas touch-a block panna koodathu */
+  canvas {
+    pointer-events: none !important;
   }
 }
