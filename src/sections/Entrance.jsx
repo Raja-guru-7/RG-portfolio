@@ -7,6 +7,26 @@ const Entrance = ({ onEnter }) => {
 
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  /* =========================================
+     DETECT REAL MOBILE
+     Desktop remains completely unchanged.
+  ========================================= */
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   /* =========================================
      AUDIO PRELOAD
@@ -32,21 +52,15 @@ const Entrance = ({ onEnter }) => {
      LIQUID BACKGROUND
      
      Desktop:
-     - Liquid WebGL remains enabled.
-     
+     - Existing LiquidBackground remains.
+
      Mobile:
-     - Use static Fish.jpg instead.
-     - This avoids mobile WebGL/touch issues.
+     - WebGL liquid effect is disabled.
+     - Static Fish.jpg is used instead.
   ========================================= */
 
   useEffect(() => {
-    const isMobile =
-      window.matchMedia("(max-width: 768px)").matches;
-
-    if (isMobile) {
-      return;
-    }
-
+    if (isMobile) return;
     if (!canvasRef.current) return;
 
     const app = LiquidBackground(canvasRef.current);
@@ -65,7 +79,7 @@ const Entrance = ({ onEnter }) => {
         canvasRef.current.innerHTML = "";
       }
     };
-  }, []);
+  }, [isMobile]);
 
   /* =========================================
      TYPING ANIMATION
@@ -109,33 +123,6 @@ const Entrance = ({ onEnter }) => {
     };
   }, []);
 
-  /* =========================================
-     ENTER HANDLER
-  ========================================= */
-
-  const handleEnter = () => {
-    const audio = audioRef.current;
-
-    if (!audio) {
-      onEnter();
-      return;
-    }
-
-    audio.currentTime = 0;
-
-    audio
-      .play()
-      .then(() => {
-        setTimeout(() => {
-          onEnter();
-        }, 350);
-      })
-      .catch((error) => {
-        console.error("Audio play failed:", error);
-        onEnter();
-      });
-  };
-
   return (
     <section
       className="
@@ -147,49 +134,56 @@ const Entrance = ({ onEnter }) => {
         bg-black
         touch-pan-y
       "
-      style={{
-        touchAction: "pan-y",
-      }}
     >
-
       {/* =========================================
-          LIQUID BACKGROUND
+          DESKTOP LIQUID BACKGROUND
       ========================================= */}
 
-      <canvas
-        ref={canvasRef}
-        className="
-          absolute
-          inset-0
-          h-full
-          w-full
-          max-[768px]:hidden
-        "
-      />
+      {!isMobile && (
+        <canvas
+          ref={canvasRef}
+          className="
+            absolute
+            inset-0
+            h-full
+            w-full
+          "
+        />
+      )}
 
       {/* =========================================
           MOBILE STATIC BACKGROUND
+
+          This prevents WebGL distortion on
+          real mobile devices.
       ========================================= */}
+
+      {isMobile && (
+        <div
+          className="
+            absolute
+            inset-0
+            bg-black
+          "
+          style={{
+            backgroundImage: 'url("/images/Fish.jpg")',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+      )}
+
+      {/* Dark Overlay */}
 
       <div
         className="
           absolute
           inset-0
-          hidden
-          bg-cover
-          bg-center
-          bg-no-repeat
-          max-[768px]:block
+          bg-black/20
+          pointer-events-none
         "
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.35)), url("/images/Fish.jpg")',
-        }}
       />
-
-      {/* Dark Overlay */}
-
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
       {/* =========================================
           MAIN CONTENT
@@ -206,12 +200,9 @@ const Entrance = ({ onEnter }) => {
           justify-center
           px-5
           text-center
+          touch-pan-y
         "
-        style={{
-          touchAction: "pan-y",
-        }}
       >
-
         {/* =========================================
             RAJA GURU
         ========================================= */}
@@ -275,8 +266,28 @@ const Entrance = ({ onEnter }) => {
         ========================================= */}
 
         <button
-          type="button"
-          onClick={handleEnter}
+          onClick={() => {
+            const audio = audioRef.current;
+
+            if (!audio) {
+              onEnter();
+              return;
+            }
+
+            audio.currentTime = 0;
+
+            audio
+              .play()
+              .then(() => {
+                setTimeout(() => {
+                  onEnter();
+                }, 350);
+              })
+              .catch((error) => {
+                console.error("Audio play aagalai:", error);
+                onEnter();
+              });
+          }}
           className="
             relative
             mt-12
@@ -316,17 +327,9 @@ const Entrance = ({ onEnter }) => {
             touchAction: "manipulation",
           }}
         >
-
-          {/* Top Left */}
           <span className="corner top-left"></span>
-
-          {/* Top Right */}
           <span className="corner top-right"></span>
-
-          {/* Bottom Left */}
           <span className="corner bottom-left"></span>
-
-          {/* Bottom Right */}
           <span className="corner bottom-right"></span>
 
           <span className="relative z-10">
@@ -341,12 +344,12 @@ const Entrance = ({ onEnter }) => {
 
       <div
         className="
-          pointer-events-none
           absolute
           bottom-8
           left-1/2
           z-10
           -translate-x-1/2
+          pointer-events-none
 
           max-[480px]:bottom-5
         "
@@ -385,68 +388,38 @@ const Entrance = ({ onEnter }) => {
       ========================================= */}
 
       <style>{`
-
         .corner {
           position: absolute;
           width: 12px;
           height: 12px;
-
-          border-color: rgba(
-            255,
-            251,
-            212,
-            0.7
-          );
-
+          border-color: rgba(255, 251, 212, 0.7);
           border-style: solid;
         }
 
         .top-left {
           top: 0;
           left: 0;
-
-          border-width:
-            1px
-            0
-            0
-            1px;
+          border-width: 1px 0 0 1px;
         }
 
         .top-right {
           top: 0;
           right: 0;
-
-          border-width:
-            1px
-            1px
-            0
-            0;
+          border-width: 1px 1px 0 0;
         }
 
         .bottom-left {
           bottom: 0;
           left: 0;
-
-          border-width:
-            0
-            0
-            1px
-            1px;
+          border-width: 0 0 1px 1px;
         }
 
         .bottom-right {
           bottom: 0;
           right: 0;
-
-          border-width:
-            0
-            1px
-            1px
-            0;
+          border-width: 0 1px 1px 0;
         }
-
       `}</style>
-
     </section>
   );
 };

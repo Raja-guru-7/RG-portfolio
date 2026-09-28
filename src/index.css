@@ -507,3 +507,38 @@ body {
     display: block;
   }
 }
+
+/* =========================================
+   REAL MOBILE TOUCH SCROLL
+   Desktop is not affected.
+========================================= */
+
+@media (max-width: 768px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    position: relative;
+  }
+
+  .mobile-touch-scroll {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: clip;
+    overflow-y: visible;
+    touch-action: pan-y;
+  }
+
+  .mobile-entrance-bg {
+    touch-action: pan-y;
+  }
+}

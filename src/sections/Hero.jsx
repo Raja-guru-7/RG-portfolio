@@ -143,6 +143,7 @@ results driven websites.`;
         z-0
         w-full
         h-[300vh]
+        touch-pan-y
       "
     >
       {/* =========================================
@@ -161,6 +162,7 @@ results driven websites.`;
           flex-col
           justify-end
           overflow-hidden
+          touch-pan-y
         "
       >
         {/* =========================================
@@ -213,10 +215,12 @@ results driven websites.`;
             inset-0
             -z-40
             pointer-events-none
+            touch-pan-y
           "
           style={{
             width: "100vw",
             height: "100vh",
+            touchAction: "pan-y",
           }}
         >
           <Canvas
@@ -228,14 +232,33 @@ results driven websites.`;
               near: 1,
               far: 20,
             }}
-            eventSource={document.getElementById("root")}
+            style={{
+              width: "100%",
+              height: "100%",
+              pointerEvents: isMobile ? "none" : "auto",
+              touchAction: "pan-y",
+            }}
+            eventSource={isMobile ? undefined : document.getElementById("root")}
             eventPrefix="client"
           >
-            <OrbitControls
-              makeDefault
-              enableZoom={false}
-              enablePan={false}
-            />
+            {/* =====================================
+                ORBIT CONTROLS
+
+                Desktop:
+                - Enabled
+
+                Mobile:
+                - Disabled so touch gestures are
+                  completely available for scrolling.
+            ===================================== */}
+
+            {!isMobile && (
+              <OrbitControls
+                makeDefault
+                enableZoom={false}
+                enablePan={false}
+              />
+            )}
 
             <Suspense fallback={null}>
               {/* =====================================
