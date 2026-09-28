@@ -1,16 +1,72 @@
-# React + Vite
+# RG — Personal Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, immersive personal portfolio website built to showcase my work, technical skills, and experience as a Full Stack Developer.
 
-Currently, two official plugins are available:
+The portfolio combines clean engineering with interactive UI, smooth animations, and 3D web experiences.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Highlights
 
-## React Compiler
+- Interactive portfolio experience
+- Responsive design for desktop, tablet, and mobile
+- Smooth scrolling with Lenis
+- Advanced animations with GSAP and ScrollTrigger
+- 3D web experience using Three.js and React Three Fiber
+- Interactive 3D sword model
+- Custom cursor interactions
+- Animated navigation menu
+- Sound interaction system with global sound control
+- Scroll-based section transitions
+- Mobile-optimized layouts and interactions
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+### Frontend
+- React
+- JavaScript
+- HTML5
+- CSS3
+- Tailwind CSS
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Animation & 3D
+- GSAP
+- GSAP ScrollTrigger
+- Three.js
+- React Three Fiber
+- React Three Drei
+- Three.js Components
+
+### UI & Interaction
+- Lenis
+- React Scroll
+- Iconify
+- Responsive design
+- Custom cursor interactions
+
+### Development Tools
+- Vite
+- Git
+- GitHub
+- ESLint
+
+## 📂 Project Structure
+
+```text
+RG-portfolio/
+├── public/
+│   ├── images/
+│   ├── models/
+│   └── sounds/
+│
+├── src/
+│   ├── components/
+│   ├── constants/
+│   ├── sections/
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+│
+├── .gitignore
+├── index.html
+├── package.json
+├── package-lock.json
+└── vite.config.js
