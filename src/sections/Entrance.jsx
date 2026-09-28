@@ -8,9 +8,9 @@ const Entrance = ({ onEnter }) => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
 
-  // =========================================
-  // AUDIO PRELOAD
-  // =========================================
+  /* =========================================
+     AUDIO PRELOAD
+  ========================================= */
 
   useEffect(() => {
     const audio = new Audio("/sounds/water 3.mp3");
@@ -28,11 +28,25 @@ const Entrance = ({ onEnter }) => {
     };
   }, []);
 
-  // =========================================
-  // LIQUID BACKGROUND
-  // =========================================
+  /* =========================================
+     LIQUID BACKGROUND
+     
+     Desktop:
+     - Liquid WebGL remains enabled.
+     
+     Mobile:
+     - Use static Fish.jpg instead.
+     - This avoids mobile WebGL/touch issues.
+  ========================================= */
 
   useEffect(() => {
+    const isMobile =
+      window.matchMedia("(max-width: 768px)").matches;
+
+    if (isMobile) {
+      return;
+    }
+
     if (!canvasRef.current) return;
 
     const app = LiquidBackground(canvasRef.current);
@@ -53,12 +67,11 @@ const Entrance = ({ onEnter }) => {
     };
   }, []);
 
-  // =========================================
-  // TYPING ANIMATION
-  // =========================================
+  /* =========================================
+     TYPING ANIMATION
+  ========================================= */
 
   useEffect(() => {
-    // Thin space between R and G
     const fullName = "Welcome to R G's Portfolio";
     const fullRole = "FULL STACK DEVELOPER";
 
@@ -96,39 +109,112 @@ const Entrance = ({ onEnter }) => {
     };
   }, []);
 
-  return (
-    <section className="relative h-screen min-h-[100svh] w-full overflow-hidden bg-black">
+  /* =========================================
+     ENTER HANDLER
+  ========================================= */
 
-      {/* ========================================= */}
-      {/* LIQUID BACKGROUND */}
-      {/* ========================================= */}
+  const handleEnter = () => {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      onEnter();
+      return;
+    }
+
+    audio.currentTime = 0;
+
+    audio
+      .play()
+      .then(() => {
+        setTimeout(() => {
+          onEnter();
+        }, 350);
+      })
+      .catch((error) => {
+        console.error("Audio play failed:", error);
+        onEnter();
+      });
+  };
+
+  return (
+    <section
+      className="
+        relative
+        h-screen
+        min-h-[100svh]
+        w-full
+        overflow-hidden
+        bg-black
+        touch-pan-y
+      "
+      style={{
+        touchAction: "pan-y",
+      }}
+    >
+
+      {/* =========================================
+          LIQUID BACKGROUND
+      ========================================= */}
 
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 h-full w-full"
+        className="
+          absolute
+          inset-0
+          h-full
+          w-full
+          max-[768px]:hidden
+        "
       />
 
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/20" />
-
-      {/* ========================================= */}
-      {/* MAIN CONTENT */}
-      {/* ========================================= */}
+      {/* =========================================
+          MOBILE STATIC BACKGROUND
+      ========================================= */}
 
       <div
         className="
-          absolute inset-0 z-10
-          flex flex-col
+          absolute
+          inset-0
+          hidden
+          bg-cover
+          bg-center
+          bg-no-repeat
+          max-[768px]:block
+        "
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.35)), url("/images/Fish.jpg")',
+        }}
+      />
+
+      {/* Dark Overlay */}
+
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+
+      {/* =========================================
+          MAIN CONTENT
+      ========================================= */}
+
+      <div
+        className="
+          absolute
+          inset-0
+          z-10
+          flex
+          flex-col
           items-center
           justify-center
-          text-center
           px-5
+          text-center
         "
+        style={{
+          touchAction: "pan-y",
+        }}
       >
 
-        {/* ========================================= */}
-        {/* RAJA GURU */}
-        {/* ========================================= */}
+        {/* =========================================
+            RAJA GURU
+        ========================================= */}
 
         <h1
           className="
@@ -144,7 +230,6 @@ const Entrance = ({ onEnter }) => {
             max-[480px]:tracking-[-0.05em]
 
             sm:text-5xl
-
             md:text-6xl
             lg:text-6xl
           "
@@ -157,9 +242,9 @@ const Entrance = ({ onEnter }) => {
           <span className="animate-pulse">_</span>
         </h1>
 
-        {/* ========================================= */}
-        {/* FULL STACK DEVELOPER */}
-        {/* ========================================= */}
+        {/* =========================================
+            FULL STACK DEVELOPER
+        ========================================= */}
 
         <p
           className="
@@ -175,7 +260,6 @@ const Entrance = ({ onEnter }) => {
             max-[480px]:tracking-[0.2em]
 
             sm:text-sm
-
             md:text-base
           "
           style={{
@@ -186,33 +270,13 @@ const Entrance = ({ onEnter }) => {
           {role}
         </p>
 
-        {/* ========================================= */}
-        {/* ENTER THE EXPERIENCE */}
-        {/* ========================================= */}
+        {/* =========================================
+            ENTER THE EXPERIENCE
+        ========================================= */}
 
         <button
-          onClick={() => {
-            const audio = audioRef.current;
-
-            if (!audio) {
-              onEnter();
-              return;
-            }
-
-            audio.currentTime = 0;
-
-            audio
-              .play()
-              .then(() => {
-                setTimeout(() => {
-                  onEnter();
-                }, 350);
-              })
-              .catch((error) => {
-                console.error("Audio play aagalai:", error);
-                onEnter();
-              });
-          }}
+          type="button"
+          onClick={handleEnter}
           className="
             relative
             mt-12
@@ -249,8 +313,10 @@ const Entrance = ({ onEnter }) => {
           style={{
             fontFamily:
               '"Arial Rounded MT Bold", "Trebuchet MS", sans-serif',
+            touchAction: "manipulation",
           }}
         >
+
           {/* Top Left */}
           <span className="corner top-left"></span>
 
@@ -269,12 +335,13 @@ const Entrance = ({ onEnter }) => {
         </button>
       </div>
 
-      {/* ========================================= */}
-      {/* BOTTOM BALL */}
-      {/* ========================================= */}
+      {/* =========================================
+          BOTTOM BALL
+      ========================================= */}
 
       <div
         className="
+          pointer-events-none
           absolute
           bottom-8
           left-1/2
@@ -313,9 +380,9 @@ const Entrance = ({ onEnter }) => {
         </div>
       </div>
 
-      {/* ========================================= */}
-      {/* BUTTON CORNER CSS */}
-      {/* ========================================= */}
+      {/* =========================================
+          BUTTON CORNER CSS
+      ========================================= */}
 
       <style>{`
 

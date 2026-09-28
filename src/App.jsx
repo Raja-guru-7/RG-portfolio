@@ -40,14 +40,31 @@ const App = () => {
 
   /* =========================================
      LENIS SMOOTH SCROLL
+
+     Desktop:
+     - Lenis remains enabled.
+
+     Mobile:
+     - Lenis is disabled.
+     - Native browser touch scrolling is used.
   ========================================= */
 
   useEffect(() => {
     if (!entered) return;
 
+    const isMobile =
+      window.matchMedia("(max-width: 768px)").matches;
+
+    // Use native scrolling on real mobile devices.
+    if (isMobile) {
+      ScrollTrigger.refresh();
+      return;
+    }
+
     const lenis = new Lenis({
       lerp: 0.1,
       smoothWheel: true,
+      syncTouch: false,
     });
 
     lenis.on("scroll", ScrollTrigger.update);
@@ -62,6 +79,29 @@ const App = () => {
     return () => {
       gsap.ticker.remove(tick);
       lenis.destroy();
+    };
+  }, [entered]);
+
+  /* =========================================
+     REFRESH SCROLLTRIGGER
+
+     Important for native mobile scrolling.
+  ========================================= */
+
+  useEffect(() => {
+    if (!entered) return;
+
+    const refresh = () => {
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener("load", refresh);
+
+    const timer = setTimeout(refresh, 300);
+
+    return () => {
+      window.removeEventListener("load", refresh);
+      clearTimeout(timer);
     };
   }, [entered]);
 
@@ -108,8 +148,14 @@ const App = () => {
   }, []);
 
   return (
-    <div className="relative w-full overflow-x-clip">
-
+    <div
+      className="
+        relative
+        w-full
+        overflow-x-clip
+        mobile-touch-scroll
+      "
+    >
       {/* =========================================
           ENTRANCE
       ========================================= */}
@@ -117,9 +163,11 @@ const App = () => {
       {!entered && (
         <div
           className={`
+            mobile-entrance-bg
             fixed
             inset-0
             z-[999]
+            overflow-hidden
             transition-transform
             duration-[2000ms]
             ease-[cubic-bezier(0.76,0,0.24,1)]
