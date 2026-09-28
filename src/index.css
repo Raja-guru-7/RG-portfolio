@@ -456,36 +456,13 @@ body {
 
 /* Real mobile devices */
 @media (max-width: 768px) {
-
   .mobile-entrance-bg {
-    background-image:
-      linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.18),
-        rgba(0, 0, 0, 0.35)
-      ),
-      url("/images/Fish.jpg");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: linear-gradient(135deg, #1a0000 0%, #000000 50%, #2a0000 100%);
   }
-
-  /*
-     Disable the liquid WebGL canvas only on mobile.
-
-     The static Fish.jpg becomes the entrance background.
-     Desktop WebGL remains untouched.
-  */
 
   .mobile-entrance-bg #canvas {
     display: none !important;
   }
-
-  /*
-     Make sure touch gestures are interpreted as
-     vertical page scrolling.
-  */
 
   .mobile-entrance-bg,
   .mobile-entrance-bg * {
@@ -515,15 +492,14 @@ body {
 
 @media (max-width: 768px) {
   html,
-  body,
+  body {
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   #root {
     width: 100%;
-    min-height: 100%;
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: clip;
   }
 
   body {
@@ -532,10 +508,7 @@ body {
 
   .mobile-touch-scroll {
     width: 100%;
-    min-height: 100%;
     overflow-x: clip;
-    overflow-y: visible;
-    touch-action: pan-y;
   }
 
   .mobile-entrance-bg {
