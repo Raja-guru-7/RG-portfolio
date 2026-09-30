@@ -50,9 +50,36 @@ const Hero = () => {
 
   const [isReady, setIsReady] = useState(false);
 
+  /* =========================================
+     PERFORMANCE: PAUSE 3D WHEN HIDDEN
+
+     After ~190% scroll the Services section
+     fully covers the hero, but the WebGL canvas
+     kept rendering at 60fps behind it. That is
+     the biggest cause of lag on phones. Now the
+     render loop stops while the hero is covered
+     and resumes when you scroll back up.
+  ========================================= */
+
+  const [heroActive, setHeroActive] = useState(true);
+
   const text = `I help growing brands and startups gain an
 unfair advantage through premium
 results driven websites.`;
+
+  useGSAP(
+    () => {
+      const visibilityTrigger = ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top -190%",
+        onEnter: () => setHeroActive(false),
+        onLeaveBack: () => setHeroActive(true),
+      });
+
+      return () => visibilityTrigger.kill();
+    },
+    { scope: containerRef }
+  );
 
   useGSAP(
     () => {
@@ -179,9 +206,6 @@ results driven websites.`;
 
         {/* =========================================
             HERO TEXT
-
-            Desktop untouched.
-            Mobile spacing only.
         ========================================= */}
 
         <div
@@ -224,8 +248,16 @@ results driven websites.`;
           }}
         >
           <Canvas
-            shadows
-            dpr={isMobile ? [1, 1.5] : [1, 2]}
+            /* Shadows are very expensive on phones */
+            shadows={!isMobile}
+            /* Lower pixel ratio on phones = big FPS win */
+            dpr={isMobile ? [1, 1.25] : [1, 2]}
+            /* Stop rendering while the hero is covered */
+            frameloop={heroActive ? "always" : "never"}
+            gl={{
+              antialias: !isMobile,
+              powerPreference: "high-performance",
+            }}
             camera={{
               position: [0, 0, -10],
               fov: isMobile ? 20 : 17.5,
@@ -242,14 +274,7 @@ results driven websites.`;
             eventPrefix="client"
           >
             {/* =====================================
-                ORBIT CONTROLS
-
-                Desktop:
-                - Enabled
-
-                Mobile:
-                - Disabled so touch gestures are
-                  completely available for scrolling.
+                ORBIT CONTROLS (desktop only)
             ===================================== */}
 
             {!isMobile && (
@@ -263,6 +288,9 @@ results driven websites.`;
             <Suspense fallback={null}>
               {/* =====================================
                   LIGHTING
+
+                  Desktop: unchanged.
+                  Mobile: fewer lights, no shadow map.
               ===================================== */}
 
               <ambientLight intensity={1.2} />
@@ -270,13 +298,15 @@ results driven websites.`;
               <directionalLight
                 position={[10, 10, 10]}
                 intensity={1.5}
-                castShadow
+                castShadow={!isMobile}
               />
 
-              <directionalLight
-                position={[-10, -10, -10]}
-                intensity={1}
-              />
+              {!isMobile && (
+                <directionalLight
+                  position={[-10, -10, -10]}
+                  intensity={1}
+                />
+              )}
 
               <directionalLight
                 position={[0, 0, 10]}

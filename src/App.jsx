@@ -19,7 +19,6 @@ import WorkIntro from "./sections/WorkIntro";
 import Work from "./sections/Work";
 import Contact from "./sections/Contact";
 
-
 import TouchDebug from "./sections/TouchDebug";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -36,6 +35,19 @@ gsap.registerPlugin(ScrollTrigger);
 ========================================= */
 
 ScrollTrigger.config({ ignoreMobileResize: true });
+
+/* =========================================
+   MOUSE DEVICE CHECK
+
+   The custom cursor only makes sense with a
+   real mouse. On phones it was hidden by CSS
+   but its animation loop still ran every
+   frame, wasting CPU.
+========================================= */
+
+const hasMouse =
+  typeof window !== "undefined" &&
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -54,15 +66,6 @@ const App = () => {
     }, 1700);
   };
 
-  /* =========================================
-     STABLE CALLBACK
-
-     Before, an inline arrow function was passed
-     to LoadingScreen. Every App re-render created
-     a new function, which restarted the loading
-     timeline (its effect depends on onComplete).
-  ========================================= */
-
   const handleLoadingComplete = useCallback(() => {
     setLoading(false);
   }, []);
@@ -75,12 +78,10 @@ const App = () => {
 
      Mobile:
      - Lenis is disabled.
-     - ScrollTrigger normalizeScroll is enabled so
-       pinned / scrubbed sections stay in sync with
-       native touch scrolling.
-
-     If normalizeScroll makes mobile feel worse,
-     delete the two normalizeScroll lines below.
+     - Pure native browser touch scrolling is
+       used (normalizeScroll removed: it moves
+       scrolling onto JavaScript, which adds lag
+       on phones).
   ========================================= */
 
   useEffect(() => {
@@ -90,12 +91,8 @@ const App = () => {
       window.matchMedia("(max-width: 768px)").matches;
 
     if (isMobile) {
-      ScrollTrigger.normalizeScroll(true);
       ScrollTrigger.refresh();
-
-      return () => {
-        ScrollTrigger.normalizeScroll(false);
-      };
+      return;
     }
 
     const lenis = new Lenis({
@@ -225,11 +222,14 @@ const App = () => {
       )}
 
       {/* =========================================
-          CUSTOM CURSOR
+          CUSTOM CURSOR (mouse devices only)
       ========================================= */}
 
-      <CustomCursor />
-      {new URLSearchParams(window.location.search).has("debug") && <TouchDebug />}
+      {hasMouse && <CustomCursor />}
+
+      {new URLSearchParams(window.location.search).has("debug") && (
+        <TouchDebug />
+      )}
 
       {/* =========================================
           MAIN PORTFOLIO
