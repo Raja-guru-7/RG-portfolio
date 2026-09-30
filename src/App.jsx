@@ -19,6 +19,9 @@ import WorkIntro from "./sections/WorkIntro";
 import Work from "./sections/Work";
 import Contact from "./sections/Contact";
 
+
+import TouchDebug from "./sections/TouchDebug";
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* =========================================
@@ -226,6 +229,7 @@ const App = () => {
       ========================================= */}
 
       <CustomCursor />
+      {new URLSearchParams(window.location.search).has("debug") && <TouchDebug />}
 
       {/* =========================================
           MAIN PORTFOLIO
