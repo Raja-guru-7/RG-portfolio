@@ -250,12 +250,12 @@ results driven websites.`;
           <Canvas
             /* Shadows are very expensive on phones */
             shadows={!isMobile}
-            /* Lower pixel ratio on phones = big FPS win */
-            dpr={isMobile ? [1, 1.25] : [1, 2]}
+            /* Sharp on high-density phone screens (iPhone is 3x) */
+            dpr={isMobile ? [1.5, 2] : [1, 2]}
             /* Stop rendering while the hero is covered */
             frameloop={heroActive ? "always" : "never"}
             gl={{
-              antialias: !isMobile,
+              antialias: true,
               powerPreference: "high-performance",
             }}
             camera={{
