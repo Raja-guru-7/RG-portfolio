@@ -3,12 +3,34 @@ import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+// =========================================
+// MODEL FILE PER DEVICE
+//
+// Desktop : original 4096px textures (unchanged)
+// Phones  : 2048px textures (7.7 MB instead of 25.8 MB).
+//           iPhone Safari downsamples four 4096px
+//           textures under memory pressure, which
+//           made the sword look blocky.
+//
+// Put the mobile file in:
+//   public/models/bloody_rose_sword__mobile.glb
+// =========================================
+
+const DESKTOP_MODEL = '/models/bloody_rose_sword__free.glb'
+const MOBILE_MODEL = '/models/bloody_rose_sword__mobile.glb'
+
+const isPhone =
+  typeof window !== 'undefined' &&
+  window.matchMedia('(max-width: 853px)').matches
+
+const MODEL_URL = isPhone ? MOBILE_MODEL : DESKTOP_MODEL
+
 export function BloodRose(props) {
-  const { nodes, materials } = useGLTF('/models/bloody_rose_sword__free.glb')
+  const { nodes, materials } = useGLTF(MODEL_URL)
   const meshRef = useRef()
-  
+
   // =========================================
-  // ADDED: Mobile Responsiveness Logic
+  // Mobile Responsiveness Logic
   // =========================================
   const [modelScale, setModelScale] = useState(0.01)
 
@@ -16,9 +38,9 @@ export function BloodRose(props) {
     const handleResize = () => {
       if (window.innerWidth < 768) {
         // Reduce the model size further for mobile screens
-        setModelScale(0.0022) 
+        setModelScale(0.0022)
       } else {
-        setModelScale(0.01)  // Desktop size (Original)
+        setModelScale(0.01) // Desktop size (Original)
       }
     }
 
@@ -40,7 +62,7 @@ export function BloodRose(props) {
   // 3. Smooth transition animation
   useFrame((state) => {
     uniforms.uTime.value = state.clock.elapsedTime
-    
+
     // Smoothly interpolate from 0 to 1 when hovered
     const targetHover = isHovered.current ? 1.0 : 0.0
     uniforms.uHover.value = THREE.MathUtils.lerp(uniforms.uHover.value, targetHover, 0.1)
@@ -49,8 +71,8 @@ export function BloodRose(props) {
   // 4. Material modification
   const liquidMaterial = useMemo(() => {
     const mat = materials['Scene_-_Root'].clone()
-    mat.transparent = true 
-    
+    mat.transparent = true
+
     mat.onBeforeCompile = (shader) => {
       shader.uniforms.uHover = uniforms.uHover
       shader.uniforms.uTime = uniforms.uTime
@@ -74,20 +96,20 @@ export function BloodRose(props) {
       `.replace(
         `#include <dithering_fragment>`,
         `#include <dithering_fragment>
-         
+
          if (uHover > 0.0) {
              // Create a wave/ripple effect using the sword's Y and X axes
              float ripple = sin(vWorldPos.y * 15.0 - uTime * 6.0) * 0.5 + 0.5;
-             
+
              // Glassy/Liquid colors
-             vec3 glassColor = vec3(0.9, 0.1, 0.15); 
+             vec3 glassColor = vec3(0.9, 0.1, 0.15);
              vec3 baseColor = gl_FragColor.rgb;
-             
+
              vec3 liquidEffect = (baseColor * glassColor) + (ripple * 0.4);
-             
+
              // Smoothly blend the normal and liquid textures based on uHover
              vec3 finalColor = mix(baseColor, liquidEffect, uHover * 0.85); // 0.85 to keep some original detail
-             
+
              gl_FragColor = vec4(finalColor, gl_FragColor.a * (1.0 - uHover * 0.2) + (uHover * 0.2 * ripple));
          }
         `
@@ -123,4 +145,4 @@ export function BloodRose(props) {
   )
 }
 
-useGLTF.preload('/models/bloody_rose_sword__free.glb')
+useGLTF.preload(MODEL_URL)
