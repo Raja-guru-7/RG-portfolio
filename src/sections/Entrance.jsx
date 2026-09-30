@@ -1,25 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
 import LiquidBackground from "threejs-components/build/backgrounds/liquid1.min.js";
 
+const MOBILE_QUERY_WIDTH = 768;
+
 const Entrance = ({ onEnter }) => {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
+  const enteredRef = useRef(false);
 
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
 
   /* =========================================
-     DETECT REAL MOBILE
-     Desktop remains completely unchanged.
+     DETECT MOBILE
+
+     FIX: initial value is computed immediately.
+     Before, it started as `false`, so on a phone
+     the WebGL liquid effect was created on the
+     first render and then abandoned when the
+     state flipped to `true`.
   ========================================= */
+
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth <= MOBILE_QUERY_WIDTH
+  );
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= MOBILE_QUERY_WIDTH);
     };
-
-    checkMobile();
 
     window.addEventListener("resize", checkMobile);
 
@@ -49,14 +60,11 @@ const Entrance = ({ onEnter }) => {
   }, []);
 
   /* =========================================
-     LIQUID BACKGROUND
-     
-     Desktop:
-     - Existing LiquidBackground remains.
+     LIQUID BACKGROUND (DESKTOP ONLY)
 
-     Mobile:
-     - WebGL liquid effect is disabled.
-     - Static Fish.jpg is used instead.
+     FIX: the app is now disposed properly so
+     no WebGL renderer / listeners are left
+     behind.
   ========================================= */
 
   useEffect(() => {
@@ -75,8 +83,10 @@ const Entrance = ({ onEnter }) => {
     app.setRain(false);
 
     return () => {
-      if (canvasRef.current) {
-        canvasRef.current.innerHTML = "";
+      try {
+        app?.dispose?.();
+      } catch (error) {
+        console.warn("Liquid dispose failed:", error);
       }
     };
   }, [isMobile]);
@@ -86,7 +96,7 @@ const Entrance = ({ onEnter }) => {
   ========================================= */
 
   useEffect(() => {
-    const fullName = "Welcome to R G's Portfolio";
+    const fullName = "Welcome to R G's Portfolio";
     const fullRole = "FULL STACK DEVELOPER";
 
     let nameIndex = 0;
@@ -123,6 +133,43 @@ const Entrance = ({ onEnter }) => {
     };
   }, []);
 
+  /* =========================================
+     ENTER BUTTON
+
+     FIX: entering no longer waits for the audio
+     promise. On phones (Low Power Mode, slow
+     network, autoplay rules) play() can stay
+     pending forever, which made the button look
+     dead. Audio is best-effort now; the site
+     always opens.
+  ========================================= */
+
+  const handleEnter = () => {
+    if (enteredRef.current) return;
+    enteredRef.current = true;
+
+    const audio = audioRef.current;
+
+    if (audio) {
+      try {
+        audio.currentTime = 0;
+        const playPromise = audio.play();
+
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch((error) => {
+            console.warn("Audio play aagalai:", error);
+          });
+        }
+      } catch (error) {
+        console.warn("Audio error:", error);
+      }
+    }
+
+    setTimeout(() => {
+      onEnter();
+    }, 350);
+  };
+
   return (
     <section
       className="
@@ -153,9 +200,6 @@ const Entrance = ({ onEnter }) => {
 
       {/* =========================================
           MOBILE STATIC BACKGROUND
-
-          This prevents WebGL distortion on
-          real mobile devices.
       ========================================= */}
 
       {isMobile && (
@@ -203,10 +247,6 @@ const Entrance = ({ onEnter }) => {
           touch-pan-y
         "
       >
-        {/* =========================================
-            RAJA GURU
-        ========================================= */}
-
         <h1
           className="
             max-w-full
@@ -232,10 +272,6 @@ const Entrance = ({ onEnter }) => {
           {name}
           <span className="animate-pulse">_</span>
         </h1>
-
-        {/* =========================================
-            FULL STACK DEVELOPER
-        ========================================= */}
 
         <p
           className="
@@ -266,28 +302,8 @@ const Entrance = ({ onEnter }) => {
         ========================================= */}
 
         <button
-          onClick={() => {
-            const audio = audioRef.current;
-
-            if (!audio) {
-              onEnter();
-              return;
-            }
-
-            audio.currentTime = 0;
-
-            audio
-              .play()
-              .then(() => {
-                setTimeout(() => {
-                  onEnter();
-                }, 350);
-              })
-              .catch((error) => {
-                console.error("Audio play aagalai:", error);
-                onEnter();
-              });
-          }}
+          type="button"
+          onClick={handleEnter}
           className="
             relative
             mt-12

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -21,6 +21,19 @@ import Contact from "./sections/Contact";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* =========================================
+   MOBILE ADDRESS BAR FIX
+
+   On phones the browser address bar shows /
+   hides while scrolling, which resizes the
+   viewport and makes ScrollTrigger refresh
+   (pinned sections jump or get stuck).
+   This makes ScrollTrigger ignore those
+   vertical resizes. Desktop is unaffected.
+========================================= */
+
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 const App = () => {
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +52,19 @@ const App = () => {
   };
 
   /* =========================================
+     STABLE CALLBACK
+
+     Before, an inline arrow function was passed
+     to LoadingScreen. Every App re-render created
+     a new function, which restarted the loading
+     timeline (its effect depends on onComplete).
+  ========================================= */
+
+  const handleLoadingComplete = useCallback(() => {
+    setLoading(false);
+  }, []);
+
+  /* =========================================
      LENIS SMOOTH SCROLL
 
      Desktop:
@@ -46,7 +72,12 @@ const App = () => {
 
      Mobile:
      - Lenis is disabled.
-     - Native browser touch scrolling is used.
+     - ScrollTrigger normalizeScroll is enabled so
+       pinned / scrubbed sections stay in sync with
+       native touch scrolling.
+
+     If normalizeScroll makes mobile feel worse,
+     delete the two normalizeScroll lines below.
   ========================================= */
 
   useEffect(() => {
@@ -55,10 +86,13 @@ const App = () => {
     const isMobile =
       window.matchMedia("(max-width: 768px)").matches;
 
-    // Use native scrolling on real mobile devices.
     if (isMobile) {
+      ScrollTrigger.normalizeScroll(true);
       ScrollTrigger.refresh();
-      return;
+
+      return () => {
+        ScrollTrigger.normalizeScroll(false);
+      };
     }
 
     const lenis = new Lenis({
@@ -84,8 +118,6 @@ const App = () => {
 
   /* =========================================
      REFRESH SCROLLTRIGGER
-
-     Important for native mobile scrolling.
   ========================================= */
 
   useEffect(() => {
@@ -186,11 +218,7 @@ const App = () => {
       ========================================= */}
 
       {loading && (
-        <LoadingScreen
-          onComplete={() => {
-            setLoading(false);
-          }}
-        />
+        <LoadingScreen onComplete={handleLoadingComplete} />
       )}
 
       {/* =========================================
